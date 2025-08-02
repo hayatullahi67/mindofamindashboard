@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 import { BlogPost } from '../types';
 
 interface EditPostModalProps {
@@ -23,6 +23,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onClose, on
     updatedAt: new Date()
   });
   const [loading, setLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   useEffect(() => {
     if (post) {
@@ -30,6 +31,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onClose, on
         ...post,
         updatedAt: new Date()
       });
+      setImagePreview(post.image || '');
     }
   }, [post]);
 
@@ -39,6 +41,36 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onClose, on
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image size must be less than 2MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setFormData(prev => ({
+        ...prev,
+        image: result
+      }));
+      setImagePreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      image: ''
+    }));
+    setImagePreview('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,16 +152,38 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onClose, on
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Image URL
+                  Image *
                 </label>
-                <input
-                  type="url"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter image URL"
-                />
+                <div className="flex items-center space-x-4">
+                  <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">
+                    <Upload className="inline w-4 h-4 mr-2" />
+                    Choose Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  {imagePreview && (
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                {imagePreview && (
+                  <div className="mt-4">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-w-xs h-auto rounded-md border border-gray-300"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             
@@ -149,8 +203,6 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onClose, on
                   placeholder="Enter post content"
                 />
               </div>
-              
-              
               
               <div className="grid grid-cols-2 gap-4">
                 <div>

@@ -86,6 +86,13 @@ const CreatePost: React.FC = () => {
       return;
     }
 
+    if (!formData.image) {
+      setModalMessage('Please upload an image for your post');
+      setModalType('danger');
+      setIsModalOpen(true);
+      return;
+    }
+
     setLoading(true);
     try {
       const postData = {
@@ -184,7 +191,7 @@ const CreatePost: React.FC = () => {
           {/* Image Upload */}
           <div>
             <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-              Image (Optional - Max 2MB)
+              Image * (Required - Max 2MB)
             </label>
             <div className="flex items-center space-x-4">
               <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">
